@@ -11,15 +11,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import PagerView from 'react-native-pager-view';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/types';
-import type { Status, TrackedTitle } from '../domain/types';
-import { STATUS_TABS, StatusFilter } from '../components/StatusFilter';
-import { TitleGrid } from '../components/TitleGrid';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { usePrefetchTracked } from '../hooks/usePrefetchTracked';
-import { getAppDb } from '../db/appDb';
-import { removeTitle } from '../db/titles';
-import { resetProgress } from '../db/episodes';
+import type { RootStackParamList } from '../../navigation/types';
+import type { Status, TrackedTitle } from '../../domain/types';
+import { STATUS_TABS, StatusFilter } from '../../components/StatusFilter';
+import { TitleGrid } from '../../components/TitleGrid';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { usePrefetchTracked } from '../../hooks/usePrefetchTracked';
+import { getAppDb } from '../../db/appDb';
+import { removeTitle } from '../../db/titles';
+import { resetProgress } from '../../db/episodes';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 

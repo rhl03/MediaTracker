@@ -17,6 +17,9 @@ let token: string | null = null;
 export function setTmdbToken(value: string | null): void {
   token = value;
 }
+export function getTmdbToken(): string | null {
+  return token;
+}
 
 export function hasTmdbToken(): boolean {
   return token !== null;

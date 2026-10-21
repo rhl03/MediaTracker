@@ -1,10 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './types';
-import { HomeScreen } from '../screens/HomeScreen';
-import { SearchScreen } from '../screens/SearchScreen';
-import { DetailsScreen } from '../screens/DetailsScreen';
-import { AboutScreen } from '../screens/AboutScreen';
+import { HomeScreen } from '../screens/home/HomeScreen';
+import { SearchScreen } from '../screens/search/SearchScreen';
+import { DetailsScreen } from '../screens/details/DetailsScreen';
+import { AboutScreen } from '../screens/about/AboutScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

@@ -10,12 +10,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/types';
-import type { SearchResult } from '../domain/types';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { searchTitles } from '../tmdb/api';
-import { describeTmdbError } from '../tmdb/client';
-import { SearchResultCard } from '../components/SearchResultCard';
+import type { RootStackParamList } from '../../navigation/types';
+import type { SearchResult } from '../../domain/types';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { searchTitles } from '../../tmdb/api';
+import { describeTmdbError } from '../../tmdb/client';
+import { SearchResultCard } from '../../components/SearchResultCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Search'>;
 

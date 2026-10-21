@@ -58,7 +58,6 @@ export function progressBadge(title: TrackedTitle): Badge {
   };
 }
 
-// ---- Milestone 9 ----
 
 export function episodeKey(ref: EpisodeRef): string {
   return `${ref.seasonNumber}:${ref.episodeNumber}`;
