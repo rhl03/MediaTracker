@@ -52,10 +52,11 @@ export function progressBadge(title: TrackedTitle): Badge {
   if (title.status === 'watchlist') {
     return { kind: 'none' };
   }
-  return {
-    kind: 'percent',
-    value: progressPercent(title.watchedCount, title.totalEpisodes),
-  };
+  const percent = progressPercent(title.watchedCount, title.totalEpisodes);
+  if (percent === 0) {
+    return { kind: 'none' };
+  }
+  return { kind: 'percent', value: percent };
 }
 
 
@@ -115,7 +116,6 @@ export function nextToWatch(
     : null;
 }
 
-// ---- Dates ----
 
 const MONTHS = [
   'Jan',

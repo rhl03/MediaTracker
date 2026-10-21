@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     color: '#121318',
     fontSize: 11,
     fontWeight: 'bold',
+    paddingLeft: 4,
   },
   checkText: {
     color: '#121318',
