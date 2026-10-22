@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -17,13 +18,14 @@ import { STATUS_TABS, StatusFilter } from '../../components/StatusFilter';
 import { TitleGrid } from '../../components/TitleGrid';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { usePrefetchTracked } from '../../hooks/usePrefetchTracked';
+import { useUpdateCheck } from '../../update/useUpdateCheck';
 import { getAppDb } from '../../db/appDb';
 import { removeTitle } from '../../db/titles';
 import { resetProgress } from '../../db/episodes';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-type PendingAction = 'remove' | 'reset';
+type PendingAction = 'remove' | 'reset' | 'update';
 
 export function HomeScreen({ navigation }: Props): React.JSX.Element {
   const pagerRef = useRef<PagerView>(null);
@@ -35,6 +37,7 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
   const [confirming, setConfirming] = useState<PendingAction | null>(null);
 
   usePrefetchTracked();
+  const update = useUpdateCheck();
 
   const selecting = selectedIds.size > 0;
 
@@ -99,6 +102,15 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
     setRefreshKey(key => key + 1);
   }
 
+  function openUpdate() {
+    if (update === null) {
+      return;
+    }
+    Linking.openURL(update.apkUrl).catch(e => {
+      console.log('Could not open update link:', e);
+    });
+  }
+
   function runConfirmed() {
     const action = confirming;
     setConfirming(null);
@@ -112,6 +124,8 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
         const db = await getAppDb();
         await resetProgress(db, id);
       });
+    } else if (action === 'update') {
+      openUpdate();
     }
   }
 
@@ -119,15 +133,23 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
   const titles = count === 1 ? '1 title' : `${count} titles`;
 
   const dialog =
-    confirming === 'reset'
+    confirming === 'update'
       ? {
+        icon: 'system-update' as const,
+        title: `Update to ${update?.version ?? 'the new version'}?`,
+        message:
+          'The new version downloads in your browser. Open it and tap Update to install. Your lists and progress are kept.',
+        confirmLabel: 'Update',
+      }
+      : confirming === 'reset'
+        ? {
           icon: 'restart-alt' as const,
           title: `Reset progress of ${titles}?`,
           message:
             'All watched episodes will be unmarked. Finished titles move back to Watching.',
           confirmLabel: 'Reset',
         }
-      : {
+        : {
           icon: 'delete-outline' as const,
           title: `Remove ${titles}?`,
           message:
@@ -166,6 +188,16 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
           >
             <MaterialIcons name="search" size={24} color="#9a9ca5" />
             <Text style={styles.searchText}>Search movies, series, anime</Text>
+            {update !== null && (
+              <Pressable
+                onPress={() => setConfirming('update')}
+                hitSlop={12}
+                style={styles.updateIcon}
+                accessibilityLabel={`Update to version ${update.version}`}
+              >
+                <MaterialIcons name="system-update" size={24} color="#a8c7fa" />
+              </Pressable>
+            )}
             <Pressable
               onPress={() => navigation.navigate('About')}
               hitSlop={12}
@@ -247,6 +279,9 @@ const styles = StyleSheet.create({
   },
   barIcon: {
     marginLeft: 20,
+  },
+  updateIcon: {
+    marginRight: 16,
   },
   pager: {
     flex: 1,
