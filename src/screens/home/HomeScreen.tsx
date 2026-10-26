@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
-  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -19,6 +18,7 @@ import { TitleGrid } from '../../components/TitleGrid';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { usePrefetchTracked } from '../../hooks/usePrefetchTracked';
 import { useUpdateCheck } from '../../update/useUpdateCheck';
+import { downloadAndInstall } from '../../update/installUpdate';
 import { getAppDb } from '../../db/appDb';
 import { removeTitle } from '../../db/titles';
 import { resetProgress } from '../../db/episodes';
@@ -35,11 +35,16 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
   );
   const [refreshKey, setRefreshKey] = useState(0);
   const [confirming, setConfirming] = useState<PendingAction | null>(null);
+  // null = not downloading, otherwise 0..1
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(
+    null,
+  );
 
   usePrefetchTracked();
   const update = useUpdateCheck();
 
   const selecting = selectedIds.size > 0;
+  const downloading = downloadProgress !== null;
 
   // While selecting, the phone's back button ends the selection
   // instead of leaving the app.
@@ -102,13 +107,18 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
     setRefreshKey(key => key + 1);
   }
 
-  function openUpdate() {
-    if (update === null) {
+  async function startUpdate() {
+    if (update === null || downloading) {
       return;
     }
-    Linking.openURL(update.apkUrl).catch(e => {
-      console.log('Could not open update link:', e);
-    });
+    setDownloadProgress(0);
+    try {
+      await downloadAndInstall(update.apkUrl, setDownloadProgress);
+    } catch (e) {
+      console.log('Update failed:', e);
+    } finally {
+      setDownloadProgress(null);
+    }
   }
 
   function runConfirmed() {
@@ -125,7 +135,7 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
         await resetProgress(db, id);
       });
     } else if (action === 'update') {
-      openUpdate();
+      startUpdate();
     }
   }
 
@@ -138,7 +148,7 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
         icon: 'system-update' as const,
         title: `Update to ${update?.version ?? 'the new version'}?`,
         message:
-          'The new version downloads in your browser. Open it and tap Update to install. Your lists and progress are kept.',
+          'The update downloads in the app, then Android asks you to install it. Your lists and progress are kept.',
         confirmLabel: 'Update',
       }
       : confirming === 'reset'
@@ -188,15 +198,25 @@ export function HomeScreen({ navigation }: Props): React.JSX.Element {
           >
             <MaterialIcons name="search" size={24} color="#9a9ca5" />
             <Text style={styles.searchText}>Search movies, series, anime</Text>
-            {update !== null && (
-              <Pressable
-                onPress={() => setConfirming('update')}
-                hitSlop={12}
-                style={styles.updateIcon}
-                accessibilityLabel={`Update to version ${update.version}`}
-              >
-                <MaterialIcons name="system-update" size={24} color="#a8c7fa" />
-              </Pressable>
+            {downloading ? (
+              <Text style={styles.downloadText}>
+                {Math.round(downloadProgress * 100)}%
+              </Text>
+            ) : (
+              update !== null && (
+                <Pressable
+                  onPress={() => setConfirming('update')}
+                  hitSlop={12}
+                  style={styles.updateIcon}
+                  accessibilityLabel={`Update to version ${update.version}`}
+                >
+                  <MaterialIcons
+                    name="system-update"
+                    size={24}
+                    color="#a8c7fa"
+                  />
+                </Pressable>
+              )
             )}
             <Pressable
               onPress={() => navigation.navigate('About')}
@@ -281,6 +301,11 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   updateIcon: {
+    marginRight: 16,
+  },
+  downloadText: {
+    color: '#a8c7fa',
+    fontWeight: 'bold',
     marginRight: 16,
   },
   pager: {
