@@ -10,10 +10,10 @@ export function AddButtons({ onAdd }: Props): React.JSX.Element {
   return (
     <View style={styles.buttons}>
       <Pressable
-        style={[styles.button, styles.buttonPrimary]}
+        style={[styles.button]}
         onPress={() => onAdd('watching')}
       >
-        <Text style={styles.buttonPrimaryText}>Add to Watching</Text>
+        <Text style={styles.buttonText}>Add to Watching</Text>
       </Pressable>
       <Pressable style={styles.button} onPress={() => onAdd('watchlist')}>
         <Text style={styles.buttonText}>Add to Watchlist</Text>
@@ -41,10 +41,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#a8c7fa',
-    fontWeight: 'bold',
-  },
-  buttonPrimaryText: {
-    color: '#121318',
     fontWeight: 'bold',
   },
 });
