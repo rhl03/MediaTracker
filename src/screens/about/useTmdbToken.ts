@@ -3,7 +3,6 @@ import { getAppDb } from '../../db/appDb';
 import { deleteSetting, setSetting } from '../../db/settings';
 import {
   describeTmdbError,
-  getTmdbToken,
   hasTmdbToken,
   setTmdbToken,
   tmdbGet,
@@ -24,27 +23,34 @@ export function useTmdbToken() {
 
   async function saveToken(): Promise<void> {
     const value = input.trim();
+
     if (value === '') {
       return;
     }
+
     setState({ kind: 'checking' });
 
-    const previousToken = getTmdbToken();
-    setTmdbToken(value);
-    clearCache();
-
     try {
-      await tmdbGet('/authentication');
+      // Validate the candidate without changing the active token.
+      await tmdbGet('/authentication', {}, value);
+
+      // Persist the token only after validation succeeds.
       const db = await getAppDb();
       await setSetting(db, 'tmdbToken', value);
+
+      // Activate the new token after persistence succeeds.
+      setTmdbToken(value);
+      clearCache();
+
       setInput('');
       setHasToken(true);
       setState({ kind: 'saved' });
     } catch (e) {
-      // Keep the old token working if the new one is wrong.
-      setTmdbToken(previousToken);
-      clearCache();
-      setState({ kind: 'error', message: describeTmdbError(e) });
+      // The previous active token remains unchanged on failure.
+      setState({
+        kind: 'error',
+        message: describeTmdbError(e),
+      });
     }
   }
 
@@ -52,16 +58,24 @@ export function useTmdbToken() {
     try {
       const db = await getAppDb();
       await deleteSetting(db, 'tmdbToken');
+
       setTmdbToken(null);
       clearCache();
+
       setHasToken(false);
+      setInput('');
       setState({ kind: 'removed' });
     } catch (e) {
       console.log('Could not remove token:', e);
+      setState({
+        kind: 'error',
+        message: 'Could not remove the token. Please try again.',
+      });
     }
   }
 
-  const saveDisabled = input.trim() === '' || state.kind === 'checking';
+  const saveDisabled =
+    input.trim() === '' || state.kind === 'checking';
 
   return {
     input,
@@ -73,3 +87,4 @@ export function useTmdbToken() {
     saveDisabled,
   };
 }
+
