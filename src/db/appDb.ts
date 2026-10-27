@@ -24,9 +24,15 @@ async function openAppDb(): Promise<Db> {
   return db;
 }
 
+
 export function getAppDb(): Promise<Db> {
   if (appDbPromise === null) {
-    appDbPromise = openAppDb();
+    appDbPromise = openAppDb().catch((error: unknown) => {
+      appDbPromise = null;
+      throw error;
+    });
   }
+
   return appDbPromise;
 }
+
