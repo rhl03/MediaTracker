@@ -57,8 +57,7 @@ export function useDetailsData({ mediaType, tmdbId }: DetailsParams) {
     let cancelled = false;
 
     async function run() {
-      setError(null);
-      try {
+      setError(null); try {
         const db = await getAppDb();
         const [details, initialLocal] = await Promise.all([
           loadDetails(mediaType, tmdbId),
