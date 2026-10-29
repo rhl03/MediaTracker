@@ -9,12 +9,6 @@ type Props = {
 export function AddButtons({ onAdd }: Props): React.JSX.Element {
   return (
     <View style={styles.buttons}>
-      <Pressable
-        style={[styles.button]}
-        onPress={() => onAdd('watching')}
-      >
-        <Text style={styles.buttonText}>Add to Watching</Text>
-      </Pressable>
       <Pressable style={styles.button} onPress={() => onAdd('watchlist')}>
         <Text style={styles.buttonText}>Add to Watchlist</Text>
       </Pressable>
@@ -35,12 +29,10 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#a8c7fa',
-  },
-  buttonPrimary: {
-    backgroundColor: '#a8c7fa',
+    backgroundColor: '#a8c7fa'
   },
   buttonText: {
-    color: '#a8c7fa',
+    color: '#121318',
     fontWeight: 'bold',
   },
 });
