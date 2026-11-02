@@ -1,0 +1,58 @@
+name: iOS simulator build
+
+on:
+  push:
+    branches: [beta]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm packages
+        run: npm ci
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Install CocoaPods (version from Gemfile)
+        run: bundle install
+
+      - name: Install pods
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Build for the simulator
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -workspace MediaTracker.xcworkspace \
+            -scheme MediaTracker \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Zip the app
+        run: |
+          cd ios/build/Build/Products/Release-iphonesimulator
+          ditto -c -k --sequesterRsrc --keepParent MediaTracker.app MediaTracker-sim.zip
+
+      - name: Upload the app
+        uses: actions/upload-artifact@v4
+        with:
+          name: MediaTracker-sim
+          path: ios/build/Build/Products/Release-iphonesimulator/MediaTracker-sim.zip
